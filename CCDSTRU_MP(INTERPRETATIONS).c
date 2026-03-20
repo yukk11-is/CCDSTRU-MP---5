@@ -1,12 +1,33 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef struct coord coord;
+typedef struct coordTag coord; //if you want to declare a coordinate variable use
 
-struct coord{ //stores x and y coordinates as structs for easier record keeping
+struct coordTag{ //stores x and y coordinates as structs for easier record keeping
 	int x;	  //If you guys dont want structs we can use 2d arrays 
 	int y;
 };
+
+typedef struct{
+	//R,B,S,T are all initialized as NULL
+	int R [4][4]; //Coordinates owned by R
+	int B [4][4]; //Coordinates owned by B
+	int S [4][4]; //Coordinates selected
+	int T [4][4]; //Coordinates touched
+	
+	int cntF; // number of FREE unclaimed spaces
+	int cntR; //cardinality of R
+	int cntB; //cardinality of B
+	int cntS; //cardinality of S
+	int cntT; //cardinality of T
+	
+	int good;
+    int go;
+    int start;
+    int found;
+    int val;
+    
+}gameState;
 
 /*
 NOTE: I have initially set all function types to void, 
@@ -33,28 +54,58 @@ void NextPlayerMove (coord *pos){
 	
 }
 
-void GameOver(){
+int GameOver(gameState *status){
 	
+	return -888;
+}
+
+int checkGame(gameState status){
+	if((status.cntF==3||
+	   status.val>=20||
+	   status.start==0)&&
+	   ((status.cntR>0&&status.cntB==0)&&
+	   (status.cntB>0&&status.cntR==0))){
+	   	return 0;
+	   }
+	return 1;
+}
+
+void ZeroArray (int array[][4]){
+	int i,j;
+	for(i=0;i<4;i++){
+		for(j=0;j<4;j++)
+			array[i][j] = 0;
+	}
 }
 
 
 int main() {
 //NOTE since set V is T or F, we will use int {1,0} (Binary)
+gameState status;
 
-int good = 0,
-	go = 0, 
-	start = 1, 
-	found = 0; //Initialization of boolean int variables
-	 
-int val = 0; // initialization of non-boolean int variables
+//------------SYSTEM INITIALIZATION------------
+//NOTE since set V is T or F, we will use int {1,0} (Binary)
+status.good = 0;
+status.go = 1;
+status.start = 1;
+status.found = 0;
 
-coord r[9] = {}, // There are 9 coordinates in a 3x3 grid NOTE: coord is a struct
-	  b[9] = {}, 
-	  s[9] = {}, 
-	  t[9] = {}, 
-  	  f[9] = {}; // initialization of int arrays that will hold coordinates
-  	
+status.val = 0;
+status.cntF = 9; //9 remaining FREE spaces in start of game
+
+//Initialize R,B,S,T as NULL
+ZeroArray(status.R);
+ZeroArray(status.B);
+ZeroArray(status.S);
+ZeroArray(status.T);
+
+
 coord pos; //This is NOT part of the list of variables from MP specs
+
+
+while (checkGame(status)){ //Game Loop Control
+	
+}
   	  
 
 	return 0;
