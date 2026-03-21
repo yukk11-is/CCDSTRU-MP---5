@@ -10,7 +10,7 @@ struct coordTag{ //stores x and y coordinates as structs for easier record keepi
 
 typedef struct{
 	
-/*
+	/*
 	NOTE: the arrays below do not hold arrays, they hold boolean (0,1) that says if 
 	coordinate belongs to the set. ALSO we will not be following the row-major attribute
 	of the C language, so that the array indices and cartesian coordinates.
@@ -20,7 +20,7 @@ typedef struct{
 	Is coordinate (2,3) found in set B?
 	B[2][3] = 0; 2 is the x coord, 3 is the y coord and, 0 is saying that the coord is not In B
 	
-*/
+	*/
 	
 	//R,B,S,T are all initialized as NULL
 	int R [4][4]; //Coordinates owned by R
@@ -42,16 +42,71 @@ typedef struct{
     
 }gameState;
 
+//Function prototypes
+int checkValid(coord pos);
+int hasCoord(int array[][4],coord pos);
+
 /*
 NOTE: I have initially set all function types to void, 
 this may change depending on the requirements later on
 */
 
-void Remove (coord *pos){
-	
+void Remove (gameState *status, coord pos){
+if(checkValid(pos)){
+	if(status->go==1){ //Remove pos from set R
+		status->R[pos.x][pos.y] = 0;
+		status->cntR--;
+			
+	}else{// Remove pos from set B
+		status->B[pos.x][pos.y] = 0;
+		status->cntB--;
+	}
+		
+	//Remove pos from S
+	status->S[pos.x][pos.y] = 0;
+	status->cntS--;
+		
+	//Remove pos from T
+	status->T[pos.x][pos.y] = 0;
+	status->cntT--;
+}
 }
 
-void Replace(coord *pos){
+void Replace(gameState *status, coord pos){
+	status->found = 0;
+	
+	if((status->go==1)&&(hasCoord(status->B,pos))){
+		status->B[pos.x][pos.y] = 0;
+		status->found = 1;
+	}
+	if((status->go==1)&&(hasCoord(status->R,pos))){
+		status->found = 1;
+	}
+	if((status->go==1)&&!(hasCoord(status->R,pos))){
+		status->R[pos.x][pos.y] = 1;
+	}
+	
+	
+	if((status->go==0)&&(hasCoord(status->R,pos))){
+		status->R[pos.x][pos.y] = 0;
+		status->found = 1;
+	}
+	if((status->go==0)&&(hasCoord(status->B,pos))){
+		status->found = 1;
+	}
+	if((status->go==0)&&!(hasCoord(status->B,pos))){
+		status->B[pos.x][pos.y] = 1;
+	}
+	
+	if(status->found==1&&!(hasCoord(status->S,pos))){
+		status->S[pos.x][pos.y] = 1;
+		status->found = 0;
+	}
+	
+	if(status->found==1&&(hasCoord(status->S,pos))&&!(hasCoord(status->T,pos))){
+		status->T[pos.x][pos.y] = 1;
+		//Expand(pos);
+	}
 	
 }
 
@@ -83,12 +138,28 @@ int checkGame(gameState status){
 	return 1;
 }
 
+//initializes all array elements to 0 (NULL)
 void ZeroArray (int array[][4]){
 	int i,j;
 	for(i=0;i<4;i++){
 		for(j=0;j<4;j++)
 			array[i][j] = 0;
 	}
+}
+
+//checks if the coord is valid returns 1 if yes, 0 otherwise;
+int checkValid(coord pos){
+	if((pos.x>0&&pos.x<4)&&(pos.y>0&&pos.y<4))
+		return 1;
+	return 0;	
+}
+
+//Checks if given coordinate is in the given array (set)
+//Returns 1 if TRUE, 0 if FALSE
+int hasCoord(int array[][4],coord pos){
+	if(array[pos.x][pos.y]==1)
+		return 1;
+	return 0;
 }
 
 
@@ -123,4 +194,3 @@ while (checkGame(status)){ //Game Loop Control
 
 	return 0;
 }
-
