@@ -45,6 +45,7 @@ typedef struct{
 //Function prototypes
 int checkValid(coord pos);
 int hasCoord(int array[][4],coord pos);
+void Expand (gameState *status, coord *pos);
 
 /*
 NOTE: I have initially set all function types to void, 
@@ -77,6 +78,7 @@ void Replace(gameState *status, coord *pos){
 	
 	if((status->go==1)&&(hasCoord(status->B,*pos))){
 		status->B[pos->x][pos->y] = 0;
+		status->cntB--;
 		status->found = 1;
 	}
 	if((status->go==1)&&(hasCoord(status->R,*pos))){
@@ -84,11 +86,13 @@ void Replace(gameState *status, coord *pos){
 	}
 	if((status->go==1)&&!(hasCoord(status->R,*pos))){
 		status->R[pos->x][pos->y] = 1;
+		status->cntR++;
 	}
 	
 	
 	if((status->go==0)&&(hasCoord(status->R,*pos))){
 		status->R[pos->x][pos->y] = 0;
+		status->cntR--;
 		status->found = 1;
 	}
 	if((status->go==0)&&(hasCoord(status->B,*pos))){
@@ -96,16 +100,19 @@ void Replace(gameState *status, coord *pos){
 	}
 	if((status->go==0)&&!(hasCoord(status->B,*pos))){
 		status->B[pos->x][pos->y] = 1;
+		status->cntB++;
 	}
 	
 	if(status->found==1&&!(hasCoord(status->S,*pos))){
 		status->S[pos->x][pos->y] = 1;
+		status->cntS++;
 		status->found = 0;
 	}
 	
 	if(status->found==1&&(hasCoord(status->S,*pos))&&!(hasCoord(status->T,*pos))){
 		status->T[pos->x][pos->y] = 1;
-		//Expand(pos);
+		status->cntT++;
+		Expand(status,pos);
 	}
 	
 }
@@ -142,10 +149,12 @@ void Update(gameState *status, coord *pos){
 	status->good = 0;
 	if(hasCoord(status->S,*pos)==0){
 		status->S[pos->x][pos->y]=0;
+		status->cntS--;
 		status->good = 1;
 	}
 	if(status->good==0&&hasCoord(status->S,*pos)&&!(hasCoord(status->T,*pos))){
 		status->T[pos->x][pos->y] = 1;
+		status->cntT++;
 		Expand(status,pos);
 	}
 }
@@ -214,6 +223,12 @@ ZeroArray(status.R);
 ZeroArray(status.B);
 ZeroArray(status.S);
 ZeroArray(status.T);
+
+//Set cardinalities of each array to Zero
+status.cntR = 0;
+status.cntB = 0;
+status.cntS = 0;
+status.cntT = 0;
 
 
 coord pos; //This is NOT part of the list of variables from MP specs
