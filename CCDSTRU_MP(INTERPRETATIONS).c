@@ -18,7 +18,7 @@ typedef struct{
 	
 	Example:
 	Is coordinate (2,3) found in set B?
-	B[2][3] = 0; 2 is the x coord,
+	B[2][3] = 0; 2 is the x coord, 3 is the y coord and, 0 is saying that the coord is not In B
 	
 	*/
 	
