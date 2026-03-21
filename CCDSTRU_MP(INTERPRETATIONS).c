@@ -51,71 +51,103 @@ NOTE: I have initially set all function types to void,
 this may change depending on the requirements later on
 */
 
-void Remove (gameState *status, coord pos){
-if(checkValid(pos)){
+void Remove (gameState *status, coord *pos){
+if(checkValid(*pos)){
 	if(status->go==1){ //Remove pos from set R
-		status->R[pos.x][pos.y] = 0;
+		status->R[pos->x][pos->y] = 0;
 		status->cntR--;
 			
 	}else{// Remove pos from set B
-		status->B[pos.x][pos.y] = 0;
+		status->B[pos->x][pos->y] = 0;
 		status->cntB--;
 	}
 		
 	//Remove pos from S
-	status->S[pos.x][pos.y] = 0;
+	status->S[pos->x][pos->y] = 0;
 	status->cntS--;
 		
 	//Remove pos from T
-	status->T[pos.x][pos.y] = 0;
+	status->T[pos->x][pos->y] = 0;
 	status->cntT--;
 }
 }
 
-void Replace(gameState *status, coord pos){
+void Replace(gameState *status, coord *pos){
 	status->found = 0;
 	
-	if((status->go==1)&&(hasCoord(status->B,pos))){
-		status->B[pos.x][pos.y] = 0;
+	if((status->go==1)&&(hasCoord(status->B,*pos))){
+		status->B[pos->x][pos->y] = 0;
 		status->found = 1;
 	}
-	if((status->go==1)&&(hasCoord(status->R,pos))){
+	if((status->go==1)&&(hasCoord(status->R,*pos))){
 		status->found = 1;
 	}
-	if((status->go==1)&&!(hasCoord(status->R,pos))){
-		status->R[pos.x][pos.y] = 1;
+	if((status->go==1)&&!(hasCoord(status->R,*pos))){
+		status->R[pos->x][pos->y] = 1;
 	}
 	
 	
-	if((status->go==0)&&(hasCoord(status->R,pos))){
-		status->R[pos.x][pos.y] = 0;
+	if((status->go==0)&&(hasCoord(status->R,*pos))){
+		status->R[pos->x][pos->y] = 0;
 		status->found = 1;
 	}
-	if((status->go==0)&&(hasCoord(status->B,pos))){
+	if((status->go==0)&&(hasCoord(status->B,*pos))){
 		status->found = 1;
 	}
-	if((status->go==0)&&!(hasCoord(status->B,pos))){
-		status->B[pos.x][pos.y] = 1;
+	if((status->go==0)&&!(hasCoord(status->B,*pos))){
+		status->B[pos->x][pos->y] = 1;
 	}
 	
-	if(status->found==1&&!(hasCoord(status->S,pos))){
-		status->S[pos.x][pos.y] = 1;
+	if(status->found==1&&!(hasCoord(status->S,*pos))){
+		status->S[pos->x][pos->y] = 1;
 		status->found = 0;
 	}
 	
-	if(status->found==1&&(hasCoord(status->S,pos))&&!(hasCoord(status->T,pos))){
-		status->T[pos.x][pos.y] = 1;
+	if(status->found==1&&(hasCoord(status->S,*pos))&&!(hasCoord(status->T,*pos))){
+		status->T[pos->x][pos->y] = 1;
 		//Expand(pos);
 	}
 	
 }
 
-void Expand (coord *pos){
+void Expand (gameState *status, coord *pos){
 	
+	coord center = *pos;
+	coord u,d,k,r;
+	
+	//Left
+	u.x = center.x-1;
+	u.y = center.y;
+	//Right
+	d.x = center.x+1;
+	d.y = center.y;
+	//Down
+	k.x = center.x;
+	k.y = center.y-1;
+	//Up
+	r.x = center.x;
+	r.y = center.y+1;
+	
+	Remove(status,pos);
+	if(status->go)
+		Replace(status,&u);
+	else
+		Replace(status,&d);
+	
+	Replace(status,&k);
+	Replace(status,&r);
 }
 
-void Update(coord *pos){
-	
+void Update(gameState *status, coord *pos){
+	status->good = 0;
+	if(hasCoord(status->S,*pos)==0){
+		status->S[pos->x][pos->y]=0;
+		status->good = 1;
+	}
+	if(status->good==0&&hasCoord(status->S,*pos)&&!(hasCoord(status->T,*pos))){
+		status->T[pos->x][pos->y] = 1;
+		Expand(status,pos);
+	}
 }
 
 void NextPlayerMove (coord *pos){
