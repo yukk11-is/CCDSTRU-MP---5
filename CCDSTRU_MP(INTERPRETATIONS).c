@@ -9,6 +9,19 @@ struct coordTag{ //stores x and y coordinates as structs for easier record keepi
 };
 
 typedef struct{
+	
+/*
+	NOTE: the arrays below do not hold arrays, they hold boolean (0,1) that says if 
+	coordinate belongs to the set. ALSO we will not be following the row-major attribute
+	of the C language, so that the array indices and cartesian coordinates.
+	^^^^^^^^^^^^^^^^^^^^^^^^^^PLEASE TAKE NOTE OF THIS^^^^^^^^^^^^^^^^^^^^^^^^^^
+	
+	Example:
+	Is coordinate (2,3) found in set B?
+	B[2][3] = 0; 2 is the x coord, 3 is the y coord and, 0 is saying that the coord is not In B
+	
+*/
+	
 	//R,B,S,T are all initialized as NULL
 	int R [4][4]; //Coordinates owned by R
 	int B [4][4]; //Coordinates owned by B
