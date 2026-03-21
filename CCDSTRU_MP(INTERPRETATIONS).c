@@ -54,16 +54,20 @@ void Remove (gameState *status, coord pos){
 if(checkValid(pos)){
 	if(status->go==1){ //Remove pos from set R
 		status->R[pos.x][pos.y] = 0;
+		status->cntR--;
 			
 	}else{// Remove pos from set B
 		status->B[pos.x][pos.y] = 0;
+		status->cntB--;
 	}
 		
 	//Remove pos from S
 	status->S[pos.x][pos.y] = 0;
+	status->cntS--;
 		
 	//Remove pos from T
 	status->T[pos.x][pos.y] = 0;
+	status->cntT--;
 }
 }
 
