@@ -44,7 +44,10 @@ typedef struct{
 
 //Function prototypes
 int checkValid(coord pos);
+<<<<<<< HEAD
 int hasCoord(int array[][4],coord pos);
+=======
+>>>>>>> Function-Remove-Development
 
 /*
 NOTE: I have initially set all function types to void, 
@@ -154,6 +157,7 @@ int checkValid(coord pos){
 	return 0;	
 }
 
+<<<<<<< HEAD
 //Checks if given coordinate is in the given array (set)
 //Returns 1 if TRUE, 0 if FALSE
 int hasCoord(int array[][4],coord pos){
@@ -162,6 +166,8 @@ int hasCoord(int array[][4],coord pos){
 	return 0;
 }
 
+=======
+>>>>>>> Function-Remove-Development
 
 int main() {
 //NOTE since set V is T or F, we will use int {1,0} (Binary)
