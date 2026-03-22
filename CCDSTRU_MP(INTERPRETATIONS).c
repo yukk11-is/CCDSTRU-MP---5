@@ -46,6 +46,7 @@ typedef struct{
 int checkValid(coord pos);
 int hasCoord(int array[][4],coord pos);
 void Expand (gameState *status, coord *pos);
+int checkGame(gameState status);
 
 /*
 NOTE: I have initially set all function types to void, 
@@ -163,20 +164,42 @@ void NextPlayerMove (coord *pos){
 	
 }
 
-int GameOver(gameState *status){
-	
-	return -888;
+// Evaluates the board when the game is over and prints the winner
+int GameOver(gameState *status) {
+    int resultCode = -1; // Default safe value instead of -888
+    
+    // Check if the game is actually over using our checkGame function
+    int over = !checkGame(*status);
+
+    if (over) {
+        // Check who has the higher piece count when the game ends
+        if (status->cntR > status->cntB) {
+            printf("R wins\n");
+            resultCode = 1;
+        } else if (status->cntR < status->cntB) {
+            printf("B wins\n");
+            resultCode = 2;
+        } else if (status->cntR == status->cntB) {
+            printf("draw\n");
+            resultCode = 0;
+        }
+    }
+    
+    // Returns 1 for R, 2 for B, 0 for draw, or -1 if the game isn't actually over yet
+    return resultCode; 
 }
 
 int checkGame(gameState status){
-	if((status.cntF==3||
-	   status.val>=20||
-	   status.start==0)&&
-	   ((status.cntR>0&&status.cntB==0)&&
-	   (status.cntB>0&&status.cntR==0))){
-	   	return 0;
-	   }
-	return 1;
+    int isPlaying = 1; // default to 1 (game is still going)
+  
+    // Game ends if F=3, val>=20, or if someone has 0 pieces after the start phase.
+    if(status.cntF == 3 || status.val >= 20 || 
+       (status.start == 0 && ((status.cntR > 0 && status.cntB == 0) || (status.cntB > 0 && status.cntR == 0)))){
+        
+        isPlaying = 0; // conditions met, game is over
+    }
+    
+    return isPlaying; 
 }
 
 //initializes all array elements to 0 (NULL)
