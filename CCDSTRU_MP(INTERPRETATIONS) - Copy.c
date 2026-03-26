@@ -183,51 +183,79 @@ void Update(gameState *status, coord *pos){
 	}
 }
 
+void NextPlayerMove(gameState *state, coord *pos) {
+    
+    int over_state = checkGame(*state);
 
-void NextPlayerMove (gameState* status, coord *pos){
-	
-    // Store the state so we don't call the function multiple times
-    int isPlaying = checkGame(*status);
-
-	if(isPlaying){ // check muna if status is a go.
-        // If starting phase.
-	    if (status->start) {
-	        if (status->go) { // R's turn
-	            status->R[pos->x][pos->y] = 1; // Adding this coords to the the set R. 
-	            status->cntR++; // Increase ung count ng piece ng R.
-	            status->S[pos->x][pos->y] = 1; // Add htis coords to the set S which are yung selected coords.
-	            status->cntS++;
-	            status->good = 1;
-	        } else { // B's turn
-	            status->B[pos->x][pos->y] = 1;
-	            status->cntB++;
-	            status->S[pos->x][pos->y] = 1;
-	            status->cntS++;
-	            status->good = 1;
-	        }
-	    } else {
-	        // If not starting phase anymore.
-            // (Replaced hasCoord with direct array access)
-	        if ((status->go && status->R[pos->x][pos->y]) || // If R player's move, and R has these coords
-	            (!status->go && status->B[pos->x][pos->y])) { // If B player's move, and B has these coords.
-	            	Update(status, pos); 
-	           		status->good = 1;
-	      	  }
-	   		}
-	}
-
-    // Use numElement() instead of status->cntR to prevent desyncs
-    if (status->start && numElement(status->R) == 1 && numElement(status->B) == 1) { // Once both have played EXACTLY 1 piece on the board, then start phase over.
-        status->start = 0;
-	}
-	
-	if(isPlaying && status->good){
-		status->good = 0;
-		status->go = !(status->go);
-		status->val++;
-	}
+    if (over_state && state->start && state->go) {
+        state->R[pos->x][pos->y] = 1;
+        state->cntR++;
+        state->S[pos->x][pos->y] = 1;
+        state->cntS++;
+        state->good = 1;
+    } else if (over_state && state->start && !state->go) {
+        state->B[pos->x][pos->y] = 1;
+        state->cntB++;
+        state->S[pos->x][pos->y] = 1;
+        state->cntS++;
+        state->good = 1;
+    } else if (over_state && !state->start) {
+        if ((state->go && state->R[pos->x][pos->y]) || (!state->go && state->B[pos->x][pos->y])) {
+            Update(state, pos);
+            state->good = 1;
+        }
+    }
+    
+    if (state->start && numElement(state->R) == 1 && numElement(state->B) == 1) {
+        state->start = 0;
+    }
+    
+    if (over_state && state->good) {
+        state->good = !state->good; 
+        state->go = !state->go;     
+        state->val++;
+    }
 }
 
+//void NextPlayerMove (gameState* status, coord *pos){
+//	
+//
+//	if(checkGame(*status)){ // check muna if status is a go.
+//    // If starting phase.
+//	    if (status->start) {
+//	        if (status->go) { // R's turn
+//	            status->R[pos->x][pos->y] = 1; // Adding this coords to the the set R. 
+//	            status->cntR++; // Increase ung count ng piece ng R.
+//	            status->S[pos->x][pos->y] = 1; // Add htis coords to the set S which are yung selected coords.
+//	            status->cntS++;
+//	            status->good = 1;
+//	        } else { // B's turn
+//	            status->B[pos->x][pos->y] = 1;
+//	            status->cntB++;
+//	            status->S[pos->x][pos->y] = 1;
+//	            status->cntS++;
+//	            status->good = 1;
+//	        }
+//	    } else if(checkGame(*status)&&!status->start){
+//	        // If not starting phase anymore.
+//	        if ((status->go && hasCoord(status->R, *pos)) || // If R player's move, and R has these coords
+//	            (!status->go && hasCoord(status->B, *pos))) { // If B player's move, and B has these coords.
+//	            	Update(status, pos); 
+//	           		status->good = 1;
+//	      	  }
+//	   		}
+//	}
+//
+//    if (status->start && status->cntR == 1 && status->cntB == 1) { // Once both have played EXACTLY 1 piece on the board, then start phase over.
+//        status->start = 0;
+//	}
+//	
+//	if(checkGame(*status)&&status->good){
+//		status->good = 0;
+//		status->go = !(status->go);
+//		status->val++;
+//	}
+//}
 
 // Evaluates the board when the game is over and prints the winner
 int GameOver(gameState *status) {
@@ -251,7 +279,6 @@ int GameOver(gameState *status) {
     return resultCode; 
 }
 
-//Counts number of elements in a set returns the cardinality of the set
 int numElement(int set[4][4]) {
     int count = 0;
     int j, i;
@@ -263,7 +290,7 @@ int numElement(int set[4][4]) {
     return count;
 }
 
-//Checks if game has not reached end game conditions
+
 int checkGame(gameState status){
     int isPlaying = 1; // default to 1 (game is still going)
   	
@@ -308,23 +335,21 @@ int hasCoord(int array[][4],coord pos){
 //Prints the grid
 void displayGrid(gameState status){
 	int i,j;
-	printf("\nY-------------\n");
+	printf("   1   2   3  ");
+	printf("\n -------------\n");
 	for(i=1;i<4;i++){
 		printf("%d|",i);
 		for(j=1;j<4;j++){
 			if(status.B[j][i]==1){
-		        if(status.S[j][i]==1) printf(" B*|"); // Highlights selected pieces
-		        else printf(" B |");
-		    } else if (status.R[j][i]==1){
-		        if(status.S[j][i]==1) printf(" R*|");
-		        else printf(" R |");
-		    } else{
-		        printf(" O |");
-		    }
+				printf(" B |");
+			} else if (status.R[j][i]==1){
+				printf(" R |");
+			} else{
+				printf(" O |");
+			}
 		}
 		printf("\n -------------\n");
 	}
-	printf("X: 1   2   3  \n\n");
 }
 
 
