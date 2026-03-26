@@ -35,10 +35,10 @@ typedef struct{
 	int cntT; //cardinality of T
 	
 	int good;
-    int go;
-    int start;
-    int found;
-    int val;
+    int go; //manages turn taking
+    int start; //Is game still in start phase?
+    int found; 
+    int val; //Number of turns completed
     
 }gameState;
 
@@ -47,35 +47,58 @@ int checkValid(coord pos);
 int hasCoord(int array[][4],coord pos);
 void Expand (gameState *status, coord *pos);
 int checkGame(gameState status);
+int numElements(int set[4][4]);
 
 /*
-NOTE: I have initially set all function types to void, 
-this may change depending on the requirements later on
+FUNCTION: Remove
+
+	PURPOSE: Removes a coordinate from the player's set, and updates the cardinality of each set
+	RETURN: None
+	@param: status, holds the game variables such as the sets, whos turn it is, etc.
+	@param: pos, the coordinate being removed from a set
+	PRECONDITION:All parameters contains VALID values
+
 */
 
 void Remove (gameState *status, coord *pos){
-if(checkValid(*pos)){
-	if(status->go==1){ //Remove pos from set R
-		status->R[pos->x][pos->y] = 0;
-		status->cntR--;
+	if(!checkValid(*pos)){
+		if(status->go==1){ //Remove pos from set R
+			status->R[pos->x][pos->y] = 0;
+			status->cntR--;
+				
+		}else{// Remove pos from set B
+			status->B[pos->x][pos->y] = 0;
+			status->cntB--;
+		}
 			
-	}else{// Remove pos from set B
-		status->B[pos->x][pos->y] = 0;
-		status->cntB--;
+		//Remove pos from S
+		status->S[pos->x][pos->y] = 0;
+		status->cntS--;
+			
+		//Remove pos from T
+		status->T[pos->x][pos->y] = 0;
+		status->cntT--;
 	}
-		
-	//Remove pos from S
-	status->S[pos->x][pos->y] = 0;
-	status->cntS--;
-		
-	//Remove pos from T
-	status->T[pos->x][pos->y] = 0;
-	status->cntT--;
-}
 }
 
+/*
+FUNCTION: Replace
+
+	PURPOSE: 
+	RETURN: None
+	@param: status, holds the game variables such as the sets, whos turn it is, etc.
+	@param: pos, the coordinate being removed from a set
+	PRECONDITION:All parameters contains VALID values
+
+*/
+
+
 void Replace(gameState *status, coord *pos){
-	status->found = 0;
+	
+	if(checkValid(*pos)) 
+		return;
+		
+	status->found = 0; //initialization of found
 	
 	if((status->go==1)&&(hasCoord(status->B,*pos))){
 		status->B[pos->x][pos->y] = 0;
@@ -149,8 +172,8 @@ void Expand (gameState *status, coord *pos){
 void Update(gameState *status, coord *pos){
 	status->good = 0;
 	if(hasCoord(status->S,*pos)==0){
-		status->S[pos->x][pos->y]=0;
-		status->cntS--;
+		status->S[pos->x][pos->y]=1;
+		status->cntS++;
 		status->good = 1;
 	}
 	if(status->good==0&&hasCoord(status->S,*pos)&&!(hasCoord(status->T,*pos))){
@@ -160,8 +183,8 @@ void Update(gameState *status, coord *pos){
 	}
 }
 
-void NextPlayerMove (coord *pos){
-	
+void NextPlayerMove (gameState* status, coord *pos)
+    
 }
 
 // Evaluates the board when the game is over and prints the winner
@@ -191,7 +214,10 @@ int GameOver(gameState *status) {
 
 int checkGame(gameState status){
     int isPlaying = 1; // default to 1 (game is still going)
-  
+  	
+  	
+  	status.cntF = 9 - (numElements(status.R) + numElements(status.B));
+  	
     // Game ends if F=3, val>=20, or if someone has 0 pieces after the start phase.
     if(status.cntF == 3 || status.val >= 20 || 
        (status.start == 0 && ((status.cntR > 0 && status.cntB == 0) || (status.cntB > 0 && status.cntR == 0)))){
@@ -214,8 +240,8 @@ void ZeroArray (int array[][4]){
 //checks if the coord is valid returns 1 if yes, 0 otherwise;
 int checkValid(coord pos){
 	if((pos.x>0&&pos.x<4)&&(pos.y>0&&pos.y<4))
-		return 1;
-	return 0;	
+		return 0;
+	return 1;	
 }
 
 //Checks if given coordinate is in the given array (set)
@@ -226,10 +252,31 @@ int hasCoord(int array[][4],coord pos){
 	return 0;
 }
 
+//Prints the grid
+void displayGrid(gameState status){
+	int i,j;
+	printf("   1   2   3  ");
+	printf("\n -------------\n");
+	for(i=1;i<4;i++){
+		printf("%d|",i);
+		for(j=1;j<4;j++){
+			if(status.B[j][i]==1){
+				printf(" B |");
+			} else if (status.R[j][i]==1){
+				printf(" R |");
+			} else{
+				printf(" O |");
+			}
+		}
+		printf("\n -------------\n");
+	}
+}
+
 
 int main() {
 //NOTE since set V is T or F, we will use int {1,0} (Binary)
 gameState status;
+
 
 //------------SYSTEM INITIALIZATION------------
 //NOTE since set V is T or F, we will use int {1,0} (Binary)
@@ -256,10 +303,49 @@ status.cntT = 0;
 
 coord pos; //This is NOT part of the list of variables from MP specs
 
-
 while (checkGame(status)){ //Game Loop Control
+	pos.x = 0;
+	pos.y = 0;
+
+	displayGrid(status);
+	
+	if(status.start==1){
+		printf("START PHASE: PLEASE PLACE YOUR INITIAL POINT\n");
+	}else{
+		printf("CAPTURE PHASE: ONLY SELECT YOUR POINTS\n");
+	}
+	
+	if(status.go==1){ //Tell user who's turn it is
+		printf("\nTURN #%d: IT IS RED's TURN\n",status.val+1);
+	}else{
+		printf("\nTURN #%d: IT IS BLUE's TURN\n",status.val+1);
+	}
+	
+	//Receive User input + input validation
+	do{
+		
+		printf("Please input a coordinate \nX:Y:\n");
+		scanf("%d %d",&pos.x, &pos.y);
+		printf("You have inputted: (%d,%d)\n\n",pos.x,pos.y);
+		
+		
+		if(checkValid(pos)){ 
+			printf("+---------------------------------+\n");
+			printf("| INVALID INPUT, PLEASE TRY AGAIN |\n");
+			printf("+---------------------------------+\n");
+		}
+		fflush(stdin);
+	}while(checkValid(pos)); //Repeat loop if invalid input
+	
+	NextPlayerMove(&status,&pos);
+
+printf("\n--------------------------------------------------------\n");
 	
 }
+
+displayGrid(status);
+
+printf("GAMECODE: %d ->",GameOver(&status));
   	  
 
 	return 0;
